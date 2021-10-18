@@ -14,9 +14,13 @@ function YourCustomRowComponent(props: any) {
   //todo: set unique draggableID and index (from element index in creditCards..?)
   //todo: fix use of draggableProps and dragHandleProps in <div> being wrapped by <Draggable>
   return (
-    <Draggable draggableId="" index={0}>
+    <Draggable draggableId={"draggable-" + cvc} index={0}>
       {(provided, snapshot) => (
-        <div>
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        >
           <h1>{name}</h1>
           <p>
             Number: {cardNumber} <br />
@@ -66,7 +70,7 @@ const onDragEnd = (result: any) => {};
 function DraggableTable() {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="droppable-1" type="person">
+      <Droppable droppableId="droppable-1">
         {(provided, snapshot) => (
           <MuiDataTable
             title="Cards"
