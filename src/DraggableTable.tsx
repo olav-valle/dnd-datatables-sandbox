@@ -11,7 +11,8 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 function YourCustomRowComponent(props: any) {
   const { name, cardNumber, cvc, expiry } = props;
-
+  //todo: set unique draggableID and index (from element index in creditCards..?)
+  //todo: fix use of draggableProps and dragHandleProps in <div> being wrapped by <Draggable>
   return (
     <Draggable draggableId="" index={0}>
       {(provided, snapshot) => (
