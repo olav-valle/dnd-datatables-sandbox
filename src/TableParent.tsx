@@ -8,37 +8,47 @@ import React, {useEffect, useState} from "react";
 import MuiDataTable from "mui-datatables";
 import {DragDropContext, Draggable, Droppable, DropResult, ResponderProvided} from "react-beautiful-dnd";
 import {DragHandle} from "@material-ui/icons";
-import {TableRow, TableCell} from "@material-ui/core"
-import {flexbox} from "@material-ui/system";
 
 function YourCustomRowComponent(props: any) {
-    const {name, cardNumber, cvc, expiry, index, colSpan} = props;
-    //todo: fix width of draggable row to match parent table
+    const {items, columns, index} = props;
     return (
-        <Draggable draggableId={"draggable-" + index} index={index}>
+        <Droppable droppableId={"droppable-" + index}>
             {(provided, snapshot) => (
                 <React.Fragment>
+                    <MuiDataTable
+                        title="Cards"
+                        data={items}
+                        columns={columns}
+                        options={{
+                            selectableRows: "none",
+                            responsive: "standard",
+                            customRowRender: (data, dataIndex,) => {
+                                const [name, cardNumber, cvc, expiry] = data;
 
-                    <TableRow
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                    >
-                        <TableCell {...provided.dragHandleProps}><DragHandle/></TableCell>
-                        <TableCell>{name}</TableCell>
-                        <TableCell>
-                            Number: {cardNumber}
-                        </TableCell>
-                        <TableCell>CVC: {cvc}</TableCell>
-                        <TableCell>expiry: {expiry}</TableCell>
-                    </TableRow>
+                                return (
+                                    <tr key={dataIndex}>
+                                        <td colSpan={4} style={{paddingTop: "10px"}}>
+                                            <YourCustomRowComponent
+                                                name={name}
+                                                cardNumber={cardNumber}
+                                                cvc={cvc}
+                                                expiry={expiry}
+                                                index={dataIndex}
+                                            />
+                                        </td>
+                                    </tr>
+                                );
+                            }
+                        }}
+                    />
                 </React.Fragment>
             )}
-        </Draggable>
+        </Droppable>
     );
 }
 
 
-function DraggableTable({}) {
+function TableParent() {
     const creditCards = [
         {
             name: "Tom Tallis",
@@ -106,7 +116,10 @@ function DraggableTable({}) {
             return temp;
         });
     };
-
+    //todo: refactor dragDropContext to parent component
+    //todo: make placeholder data sorted into parent-child-grandchild hierarchy
+    //todo: Eval: implement onDragEnd so it works as a callback for Draggable grandchild?
+    //todo: make parent and grandparent collapsible
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="droppable-1">
@@ -123,8 +136,8 @@ function DraggableTable({}) {
                                     const [name, cardNumber, cvc, expiry] = data;
 
                                     return (
-                                        <TableRow key={dataIndex}>
-                                            <TableCell colSpan={data.length+1}>
+                                        <tr key={dataIndex}>
+                                            <td colSpan={4} style={{paddingTop: "10px"}}>
                                                 <YourCustomRowComponent
                                                     name={name}
                                                     cardNumber={cardNumber}
@@ -132,8 +145,8 @@ function DraggableTable({}) {
                                                     expiry={expiry}
                                                     index={dataIndex}
                                                 />
-                                            </TableCell>
-                                        </TableRow>
+                                            </td>
+                                        </tr>
                                     );
                                 }
                             }}
@@ -146,4 +159,4 @@ function DraggableTable({}) {
     );
 }
 
-export default DraggableTable;
+export default TableParent;

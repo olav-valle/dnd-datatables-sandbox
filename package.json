@@ -21,6 +21,7 @@
     "@material-ui/system": "4.12.1",
     "@material-ui/types": "5.1.0",
     "@material-ui/utils": "4.11.2",
+    "@mui/material": "^5.0.4",
     "@types/mui-datatables": "3.7.7",
     "@types/react-beautiful-dnd": "13.1.2",
     "mui-datatables": "3.7.8",
