@@ -12,7 +12,7 @@ import { TableRow, TableCell } from '@material-ui/core'
 
 function YourCustomRowComponent(props: any) {
     // console.log(props)
-    const { drag, name, cardNumber, cvc, expiry, index} = props
+    const { drag, name, cardNumber, cvc, expiry, index } = props
     //todo: fix width of draggable row to match parent table
     return (
         <Draggable key={cardNumber} draggableId={cardNumber} index={index}>
@@ -46,6 +46,7 @@ function DraggableTable(props: any) {
             options={{
                 selectableRows: 'none',
                 responsive: 'standard',
+                customFooter: () => { return (<div/>) },
                 customRowRender: (data, dataIndex) => {
                     const [drag, name, cardNumber, cvc, expiry] = data
 
