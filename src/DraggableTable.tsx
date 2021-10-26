@@ -11,11 +11,11 @@ import { DragHandle } from '@material-ui/icons'
 import { TableRow, TableCell } from '@material-ui/core'
 
 function YourCustomRowComponent(props: any) {
-    console.log(props)
+    // console.log(props)
     const { drag, name, cardNumber, cvc, expiry, index} = props
     //todo: fix width of draggable row to match parent table
     return (
-        <Draggable draggableId={'draggable-' + index} index={index}>
+        <Draggable key={cardNumber} draggableId={cardNumber} index={index}>
             {(provided, snapshot) => (
                 <React.Fragment>
                     <TableRow ref={provided.innerRef} {...provided.draggableProps}>
@@ -27,6 +27,7 @@ function YourCustomRowComponent(props: any) {
                         <TableCell colSpan={1}>{cardNumber}</TableCell>
                         <TableCell colSpan={1}>{cvc}</TableCell>
                         <TableCell colSpan={1}>{expiry}</TableCell>
+                        <TableCell colSpan={1}>{index}</TableCell>
                     </TableRow>
                 </React.Fragment>
             )}
@@ -36,7 +37,6 @@ function YourCustomRowComponent(props: any) {
 
 function DraggableTable(props: any) {
     const { columns, data } = props
-
 
     return (
         <MuiDataTable

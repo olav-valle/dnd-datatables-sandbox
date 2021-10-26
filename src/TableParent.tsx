@@ -4,33 +4,34 @@
   https://mui-datatables-responsive-demo.skn0tt.now.sh
 */
 
-import React, { Reducer, useEffect, useReducer, useState } from 'react'
-import MuiDataTable from 'mui-datatables'
+import React, { Reducer } from 'react'
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd'
 import DraggableTable from './DraggableTable'
+import { Draft } from 'immer'
+import { useImmerReducer } from 'use-immer'
 
 function TableParent() {
 
 
     // these objects would be generated from queried data
     const creditCards1: CardListModel = {
-        listId: 1,
+        listId: 0,
         cards: [
             {
                 name: 'Tom Tallis',
-                cardNumber: '5500005555555559',
+                cardNumber: '1111111111111111',
                 cvc: '582',
                 expiry: '02/24',
             },
             {
                 name: 'Rich Harris',
-                cardNumber: '4444444444444448',
+                cardNumber: '2222222222222222',
                 cvc: '172',
                 expiry: '03/22',
             },
             {
                 name: 'Moby Test',
-                cardNumber: '3566003566003566',
+                cardNumber: '3333333333333333',
                 cvc: '230',
                 expiry: '12/25',
             },
@@ -38,24 +39,24 @@ function TableParent() {
     }
 
     const creditCards2: CardListModel = {
-        listId: 2,
+        listId: 1,
         cards: [
             {
                 name: 'Tom Waits',
-                cardNumber: '5500005555555559',
+                cardNumber: '4444444444444444',
                 cvc: '325',
                 expiry: '03/30',
             },
             {
                 name: 'Rich Gallup',
-                cardNumber: '9292929113444484',
+                cardNumber: '5555555555555555',
                 cvc: '123',
                 expiry: '03/22',
             }
             ,
             {
                 name: 'Moby Richardson',
-                cardNumber: '0335660356005666',
+                cardNumber: '6666666666666666',
                 cvc: '230',
                 expiry: '12/25',
             },
@@ -84,6 +85,10 @@ function TableParent() {
             name: 'expiry',
             label: 'Expiry',
         },
+        {
+            name: 'index',
+            label: 'dragIndex'
+        }
     ]
 
     // remodel this to fit useState objects used in ZoneTable
@@ -91,6 +96,12 @@ function TableParent() {
         lists: CardListModel[]
     }
 
+    // immer recommends setting all types as readonly,
+    // or wrapping in Immutable..?
+    // type ReadOnlyStateModel = Immutable<StateModel>
+
+
+    // const creditCardsInitial: ReadOnlyStateModel = {
     const creditCardsInitial: StateModel = {
         lists: [
             creditCards1,
@@ -124,24 +135,42 @@ function TableParent() {
     }
 
 // Reducer for handling reordering and moving of state data.
-    const reducer = (state: StateModel, action: ActionType) => {
-        //todo: action enum MOVE, REORDER, NONE,
+    const reducer: Reducer<any, any> = (draft: Draft<StateModel>, action: ActionType) => {
         const { type, payload } = action
 
+        //todo: refactor code from cases into functions? \
+        // Will Immer allow that, considering the Draft object?
         switch (type) {
+            case ActionEnum.MoveItem:
+                moveItemBetweenLists()
+                return
             case ActionEnum.ReorderItem:
-                return state
+                // todo:
+                // fetch list (droppable) from draft
+                // fetch item (draggable) from list using dropResult.source.index
+                // splice item into list using index from dropResult.destination.index
+                const toList = Number.parseInt(payload.destination!.droppableId)
+                const fromList = Number.parseInt(payload.source!.droppableId)
+
+                const toIdx = payload.destination?.index!
+                const fromIdx = payload.source?.index
+                const [removed] = draft.lists[fromList].cards.splice(fromIdx, 1)
+                draft.lists[toList].cards.splice(toIdx, 0, removed)
+                reorderList()
+                return
             default:
-                return state
+                return
         }
     }
 
     const reorderList = () => {
+        //todo: move droppable from result.source.index to result.destination.index
 
     }
 
     const moveItemBetweenLists = () => {
-
+        //todo: move card object from one list to another.
+        //
     }
 
     // use this to build zone-sensor lists from fetch?
@@ -149,9 +178,7 @@ function TableParent() {
         return creditCards
     }
 
-    const [state, dispatch] = useReducer<typeof reducer, StateModel>(reducer, creditCardsInitial, init)
-
-    //todo: use action dispatch in handleDragEnd
+    const [state, dispatch] = useImmerReducer(reducer, creditCardsInitial, init)
 
     // Figures out what happened during the drag-and-drop (moved to new list, reordered, ...)
     // normally one would commit/save any order changes via an api call here...
@@ -168,27 +195,24 @@ function TableParent() {
             } else {
                 //reorder
                 dispatch(reorderAction(result))
-                //todo: dispatch REORDER
-                // todo: refactor to reorderList function
             }
         } else {
             // dragged to different list than source
             dispatch(moveAction(result))
-            //todo dispatch MOVE
+            // dispatch(reorderAction(result))
+
             return
         }
 
     }
 
-
-
-//todo: Eval: implement onDragEnd so it works as a callback for Draggable grandchild?
-//todo: make parent (this comp) render muitable with DraggableTable comps as rows
 //todo: make parent and grandparent collapsible
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
-            {((state as StateModel).lists.map((list, index) =>
-                <Droppable droppableId={`${index}`}>
+            {/*<div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around'}}>*/}
+                {((state as StateModel)?.lists?.map((list, index) =>
+                <Droppable droppableId={`${list.listId}`}>
+                {/*<Droppable droppableId={`${index}`}>*/}
                     {(provided, snapshot) => (
                         <div ref={provided.innerRef} {...provided.droppableProps}>
                             <DraggableTable columns={columns} data={list.cards} />
@@ -197,6 +221,7 @@ function TableParent() {
                     )}
                 </Droppable>,
             ))}
+        {/*</div>*/}
         </DragDropContext>
     )
 }
