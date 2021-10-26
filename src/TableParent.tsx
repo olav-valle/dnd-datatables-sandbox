@@ -1,16 +1,9 @@
-/*
-  See another example of how to use `customRowRender` at
-  https://github.com/Skn0tt/mui-datatables-responsive-demo
-  https://mui-datatables-responsive-demo.skn0tt.now.sh
-*/
-
 import React, { Reducer } from 'react'
 import { DragDropContext, Droppable, DropResult, ResponderProvided } from 'react-beautiful-dnd'
 import DraggableTable from './DraggableTable'
-import { Draft } from 'immer'
+import { Draft, Immutable } from 'immer'
 import { useImmerReducer } from 'use-immer'
 
-function TableParent() {
 
 
     // these objects would be generated from queried data
@@ -57,7 +50,7 @@ function TableParent() {
             {
                 name: 'Moby Richardson',
                 cardNumber: '6666666666666666',
-                cvc: '230',
+                cvc: '630',
                 expiry: '12/25',
             },
         ],
@@ -91,6 +84,8 @@ function TableParent() {
         }
     ]
 
+function TableParent() {
+
     // remodel this to fit useState objects used in ZoneTable
     type StateModel = {
         lists: CardListModel[]
@@ -98,11 +93,10 @@ function TableParent() {
 
     // immer recommends setting all types as readonly,
     // or wrapping in Immutable..?
-    // type ReadOnlyStateModel = Immutable<StateModel>
+    type ReadOnlyStateModel = Immutable<StateModel>
 
 
-    // const creditCardsInitial: ReadOnlyStateModel = {
-    const creditCardsInitial: StateModel = {
+    const creditCardsInitial: ReadOnlyStateModel = {
         lists: [
             creditCards1,
             creditCards2,
@@ -135,42 +129,38 @@ function TableParent() {
     }
 
 // Reducer for handling reordering and moving of state data.
-    const reducer: Reducer<any, any> = (draft: Draft<StateModel>, action: ActionType) => {
+    const reducer: Reducer<Draft<any>, ActionType> = (draft: Draft<StateModel>, action: ActionType) => {
         const { type, payload } = action
 
-        //todo: refactor code from cases into functions? \
-        // Will Immer allow that, considering the Draft object?
         switch (type) {
             case ActionEnum.MoveItem:
-                moveItemBetweenLists()
+                moveItemBetweenLists(draft, payload)
                 return
             case ActionEnum.ReorderItem:
-                // todo:
-                // fetch list (droppable) from draft
-                // fetch item (draggable) from list using dropResult.source.index
-                // splice item into list using index from dropResult.destination.index
-                const toList = Number.parseInt(payload.destination!.droppableId)
-                const fromList = Number.parseInt(payload.source!.droppableId)
-
-                const toIdx = payload.destination?.index!
-                const fromIdx = payload.source?.index
-                const [removed] = draft.lists[fromList].cards.splice(fromIdx, 1)
-                draft.lists[toList].cards.splice(toIdx, 0, removed)
-                reorderList()
+                reorderList(draft, payload)
                 return
             default:
                 return
         }
     }
 
-    const reorderList = () => {
-        //todo: move droppable from result.source.index to result.destination.index
-
+    // Moves an element around inside its list
+    const reorderList = (draft: Draft<StateModel>, payload: DropResult) => {
+        const fromList = Number.parseInt(payload.source!.droppableId)
+        const toIdx = payload.destination?.index!
+        const fromIdx = payload.source?.index
+        const [removed] = draft.lists[fromList].cards.splice(fromIdx, 1)
+        draft.lists[fromList].cards.splice(toIdx, 0, removed)
     }
 
-    const moveItemBetweenLists = () => {
-        //todo: move card object from one list to another.
-        //
+    // Moves an element between two lists
+    const moveItemBetweenLists = (draft: Draft<StateModel>, payload: DropResult) => {
+        const toList = Number.parseInt(payload.destination!.droppableId)
+        const fromList = Number.parseInt(payload.source!.droppableId)
+        const toIdx = payload.destination?.index!
+        const fromIdx = payload.source?.index
+        const [removed] = draft.lists[fromList].cards.splice(fromIdx, 1)
+        draft.lists[toList].cards.splice(toIdx, 0, removed)
     }
 
     // use this to build zone-sensor lists from fetch?
@@ -178,7 +168,7 @@ function TableParent() {
         return creditCards
     }
 
-    const [state, dispatch] = useImmerReducer(reducer, creditCardsInitial, init)
+    const [state, dispatch] = useImmerReducer<ReadOnlyStateModel>(reducer, creditCardsInitial, init)
 
     // Figures out what happened during the drag-and-drop (moved to new list, reordered, ...)
     // normally one would commit/save any order changes via an api call here...
@@ -210,9 +200,9 @@ function TableParent() {
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             {/*<div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around'}}>*/}
-                {((state as StateModel)?.lists?.map((list, index) =>
+            {((state as StateModel)?.lists?.map((list, index) =>
                 <Droppable droppableId={`${list.listId}`}>
-                {/*<Droppable droppableId={`${index}`}>*/}
+                    {/*<Droppable droppableId={`${index}`}>*/}
                     {(provided, snapshot) => (
                         <div ref={provided.innerRef} {...provided.droppableProps}>
                             <DraggableTable columns={columns} data={list.cards} />
@@ -221,7 +211,7 @@ function TableParent() {
                     )}
                 </Droppable>,
             ))}
-        {/*</div>*/}
+            {/*</div>*/}
         </DragDropContext>
     )
 }
