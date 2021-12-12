@@ -202,7 +202,7 @@ function TableParent() {
         <DragDropContext onDragEnd={handleDragEnd}>
             {/*<div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around'}}>*/}
             {((state as StateModel)?.lists?.map((list, index) =>
-                <Droppable droppableId={`${list.listId}`}>
+                <Droppable key = {list.listId} droppableId={`${list.listId}`}>
                     {/*<Droppable droppableId={`${index}`}>*/}
                     {(provided, snapshot) => (
                         <div ref={provided.innerRef} {...provided.droppableProps}>

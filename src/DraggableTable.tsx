@@ -10,14 +10,14 @@ import { Draggable } from 'react-beautiful-dnd'
 import { DragHandle } from '@material-ui/icons'
 import { TableRow, TableCell } from '@material-ui/core'
 
-function YourCustomRowComponent(props: any) {
+function DraggableRowComponent(props: any) {
     // console.log(props)
     const { drag, name, cardNumber, cvc, expiry, index } = props
     //todo: fix width of draggable row to match parent table
     return (
         <Draggable key={cardNumber} draggableId={cardNumber} index={index}>
             {(provided, snapshot) => (
-                <React.Fragment>
+                // <React.Fragment>
                     <TableRow ref={provided.innerRef} {...provided.draggableProps}>
                         <TableCell colSpan={1} {...provided.dragHandleProps}>
                             <DragHandle />
@@ -29,7 +29,7 @@ function YourCustomRowComponent(props: any) {
                         <TableCell colSpan={1}>{expiry}</TableCell>
                         <TableCell colSpan={1}>{index}</TableCell>
                     </TableRow>
-                </React.Fragment>
+                // </React.Fragment>
             )}
         </Draggable>
     )
@@ -51,7 +51,7 @@ function DraggableTable(props: any) {
                     const [drag, name, cardNumber, cvc, expiry] = data
 
                     return (
-                        <YourCustomRowComponent
+                        <DraggableRowComponent
                             drag={drag}
                             name={name}
                             cardNumber={cardNumber}
